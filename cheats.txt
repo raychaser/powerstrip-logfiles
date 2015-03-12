@@ -16,3 +16,14 @@ sudo docker build -t raychaser/powerstrip . && sudo docker run -it --rm --name p
 Run a simple test:
 
 DOCKER_HOST=localhost:2375 docker run -it -e "LOGS=/x,/y" -e "LOGS=/z" ubuntu ls -la /z
+
+
+Basic adapters.yml with powerstrip-debug:
+
+endpoints:
+  "POST /*/containers/create":
+    pre: [logfiles, debug]
+    post: [debug, logfiles]
+adapters:
+  debug: http://debug/v1/extension
+  logfiles: http://logfiles/v1/extension
