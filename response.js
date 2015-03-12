@@ -1,4 +1,4 @@
-module.exports = function(root, body){
+module.exports = function(root, verbose, body){
 
   function S4() {
     return (((1+Math.random())*0x10000)|0).toString(16).substring(1)
@@ -8,24 +8,34 @@ module.exports = function(root, body){
     return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase()
   }
 
+  function debug(s) {
+    if (verbose) {
+      console.log(s)
+    }
+  }
+
+  var POWERSTRIP_TOKEN = "POWERSTRIP_TOKEN__"
+
   var returnBody = {
     PowerstripProtocolVersion:1
   }
 
   if(body.Type == 'pre-hook'){
+
+    // Figure out the actual request to the Docker daemon.
     var clientRequestBody = JSON.parse(body.ClientRequest.Body)
 
-    console.log("\n\nbody.ClientRequest.Body:\n")
-    console.log(JSON.stringify(clientRequestBody, null, 4))
-    console.log("\n\n")
+    debug("\n\nbody.ClientRequest.Body:\n")
+    debug(JSON.stringify(clientRequestBody, null, 4))
+    debug("\n\n")
 
     // Get the ID of the container, and the name.
-    var id = createGuid()
-    var pathPrefix = root + "/" + id
+    var token = createGuid()
+    var pathPrefix = root + "/" + token
 
     // Figure out all the log file paths from the LOGS env
-    var envs = clientRequestBody.Env || {}
-    console.log("Envs: " + envs)
+    var envs = clientRequestBody.Env || []
+    debug("Envs: " + envs)
     var logs = []
     for (var i = 0; i < envs.length; i++) {
       var env = envs[i]
@@ -36,7 +46,11 @@ module.exports = function(root, body){
         }
       }
     }
-    console.log("Logs: " + logs)
+    debug("Logs: " + logs)
+
+    // Add the token to the environment.
+    envs.push(POWERSTRIP_TOKEN + "=" + token)
+    clientRequestBody.Env = envs
 
     // Create the additional bind mounts for the log paths
     var binds = clientRequestBody.HostConfig.Binds || []
@@ -45,18 +59,31 @@ module.exports = function(root, body){
       var containerPath = logs[i]
       var bind = hostPath + ":" + containerPath
       binds.push(bind)
-      console.log("Bind: " + bind)     
+      debug("Bind: " + bind)     
     }
-    console.log("Binds: " + binds)
+    debug("Binds: " + binds)
     clientRequestBody.HostConfig.Binds = binds
+
+    // Forward the changes as the modified client request.
     var modifiedClientRequestBody = JSON.stringify(clientRequestBody)
     body.ClientRequest.Body = modifiedClientRequestBody
     returnBody.ModifiedClientRequest = body.ClientRequest
-  }
-  else if(body.Type == 'post-hook'){
-    console.log("Post-hook")
-  }
-  else{
+  // }
+  // else if(body.Type == 'post-hook'){
+
+    // var serverResponseBody = JSON.parse(body.ServerResponse.Body)
+
+    //
+    // Once we know how to thread the modified client request 
+    // through to the post-hook, use the token to rename the 
+    // root directory for the bind mounts to the ID of the container.
+    //
+
+    // var modifiedServerResponseBody = JSON.stringify(serverResponseBody)
+    // body.ServerResponse.Body = modifiedServerResponseBody
+    // returnBody.ModifiedServerResponse = body.ServerResponse
+  
+  } else{
 
     return null
   }

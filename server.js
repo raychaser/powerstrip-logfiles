@@ -12,12 +12,7 @@ module.exports = function(opts){
       }
 
       body = JSON.parse(body.toString())
-
-      console.log("\n\nBody:\n")
-      console.log(body)
-      console.log("\n\n")
-
-      var response = Response(opts.root, body)
+      var response = Response(opts.root, opts.verbose, body)
 
       if(!response){
         console.log('Error:  No Type found in body')
