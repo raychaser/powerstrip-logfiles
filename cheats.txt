@@ -1,6 +1,6 @@
 Run powerstrip-logfiles:
 
-$ sudo docker build -t raychaser/powerstrip-logfiles:latest . && sudo docker run -it --rm --name powerstrip-logfiles --expose 80 raychaser/powerstrip-logfiles:latest --root /tmp/logfiles -v
+$ sudo docker build -t raychaser/powerstrip-logfiles:latest . && sudo docker run -it --rm --name powerstrip-logfile--expose 80 -v /var/log/container-logfiles:/var/log/container-logfiles raychaser/powerstrip-logfiles:latest -v --root /var/log/container-logfiles
 
 
 Run powerstrip-debug:

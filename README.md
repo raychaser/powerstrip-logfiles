@@ -1,11 +1,16 @@
 powerstrip-logfiles
 ===================
 
-A [Powerstrip](https://github.com/ClusterHQ/powerstrip) adapter that moves in-container logfiles and paths to logfiles to a common location to be consumed by a regular logfile collection agent, such as the [Sumo Logic File Collector](https://www.sumologic.com).
+A [Powerstrip](https://github.com/ClusterHQ/powerstrip) adapter that allows collection of in-container log files location by a regular logfile collection agent, such as the [Sumo Logic File Collector](https://www.sumologic.com).
 
-Sometimes, a fat container is just a reality - how to centralize the various logfiles in a fat container for central collection? Even in a single-process container, sometimes the process is writing multiple logfiles (Nginx, Apache access and error logs, for example) - and while it is possible to perform some situps to multiplex them over stdout, this might not always be the most elegant solution.
+Docker and the use of containers is spreading like wildfire. In a Docker-ized environment, certain legacy practices and approaches are being challenged. Centralized logging is the one of them. The most popular way of capturing logs coming from a container is to setup the containerized process such that it logs to stdout. Docker then spools this to disk, from where it can be collected. This is great for many use cases.
 
-This Powerstrip adapter is a Proof-of-Concept to show that it is not terribly hard to centralize the logfiles such that any old logfile collector can pick them up via a simple "**" recursive collection rule.
+At the same time, at work at Sumo Logic our customers are telling us that the stdout approach doesn't always work. Not all containers are setup to follow the process-per-container model. This is sometimes referred to as "fat" containers. There are tons of opinions about whether this is the right thing to do or not. Pragmatically speaking, it is a reality for some users.
+
+Even some programs that are otherwise easily containerized as single processes pose some challenges to the stdout model. For example, popular webservers write at least two log files: access and error logs. There are of course work arounds to map this back to a single stdout stream. But ultimately there's only so much multiplexing that can be done before the demuxing operation becomes too painful.
+
+powerstrip-logfiles presents a proof of concept towards easily centralizing log files from within a container. Simply set LOGS=/var/logs/nginx in the container environment, for example, will use a bind mount to make the Nginx access and error logs available on the host under `/var/logs/container-logfiles/containers/[ID of the Nginx container]/var/log/nginx`. A file-based log collector can now simply be configured to recursively collect from `/var/logs/container-logfiles/containers` and will pick up logs from any container configured with the LOGS environment.
+
 
 ## Install
 
@@ -16,9 +21,11 @@ $ docker build -t raychaser/powerstrip-logfiles .
 ## Run the adapter
 
 ```bash
-$ docker run -d --name powerstrip-logfiles \
-    --expose 80 \
-    raychaser/powerstrip-logfiles --root __my/path__
+$ docker run -it --rm --name powerstrip-logfile \
+  --expose 80 \
+  -v /var/log/container-logfiles:/var/log/container-logfiles \
+  raychaser/powerstrip-logfiles:latest \
+  -v --root /var/log/container-logfiles
 ```
 
 
@@ -32,6 +39,7 @@ $ cat > ~/powerstrip-demo/adapters.yml <<EOF
 endpoints:
   "POST /*/containers/create":
     pre: [logfiles]
+    post: [logfiles]
 adapters:
   logfiles: http://logfiles/v1/extension
 EOF
@@ -68,14 +76,9 @@ $ docker run --rm -e "LOGS=/x,/y" ubuntu \
 You should now be able to see the files "foo" and "bar" under the path specified as the --root:
 
 ```bash
-$ ls __my/path__/__GUID__/x
+$ ls /var/log/container-logfiles/containers/[container ID]/x
 ```
 
 ```bash
-$ ls __my/path__/__GUID__/y
+$ ls /var/log/container-logfiles/containers/[container ID]/y
 ```
-
-The GUID is for now randomly generated and represents a container; as soon as I get a chance I will change this to the ID of the actual container.
-
-Hopefully, the point is coming across nonetheless - any in-container log files will be neatly  accessible in a central place in the file system and can from there be easily collected and forwarded.
-

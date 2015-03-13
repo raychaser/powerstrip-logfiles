@@ -21,13 +21,13 @@ $ CID=$(DOCKER_HOST=localhost:2375 docker run -d --name nginx-example-powerstrip
 
 $ echo $CID
 
-$ ls -la /tmp/logfiles/containers/$CID/
+$ ls -la /var/log/container-logfiles/containers/$CID/
 total 12
 drwxr-xr-x 3 root root 4096 Mar 12 18:41 .
 drwxr-xr-x 5 root root 4096 Mar 12 18:41 ..
 drwxr-xr-x 3 root root 4096 Mar 12 18:41 var
 
-$ tail /tmp/logfiles/containers/$CID/var/log/nginx/access.log
+$ tail /var/log/container-logfiles/containers/$CID/var/log/nginx/access.log
 172.17.42.1 - - [13/Mar/2015:01:43:04 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0"
 172.17.42.1 - - [13/Mar/2015:01:43:05 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0"
 172.17.42.1 - - [13/Mar/2015:01:43:05 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0"

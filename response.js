@@ -34,24 +34,27 @@ module.exports = function(root, verbose, body){
     var originalPath = root + "/original" 
     var token = createGuid()
     var pathPrefix = originalPath + "/" + token
-    fs.stat(originalPath, function(err, stat) {
-      if (err) {
-        err = fs.mkdirSync(originalPath)
-        if (err) throw err;   
-        debug("Making original directory complete")
-
-        err = fs.mkdirSync(pathPrefix)
-        if (err) throw err;   
-        debug("Making path prefix directory complete")
-      }  
-      else {
-
-        // TODO: Ouch.
-        err = fs.mkdirSync(pathPrefix)
-        if (err) throw err;   
-        debug("Making path prefix directory complete")
-      }
-    })
+    if (!fs.existsSync(root)) {
+      var err = fs.mkdirSync(root)
+      if (err) throw err;   
+      debug("Created root directory: " + root)
+    } else {
+      debug("Root directory exists: " + root)
+    }
+    if (!fs.existsSync(originalPath)) {
+      var err = fs.mkdirSync(originalPath)
+      if (err) throw err;   
+      debug("Created original directory: " + originalPath)
+    } else {
+      debug("Original directory exists: " + originalPath)
+    }
+    if (!fs.existsSync(pathPrefix)) {
+      var err = fs.mkdirSync(pathPrefix)
+      if (err) throw err;   
+      debug("Create prefix directory: " + pathPrefix)
+    } else {
+      debug("Prefix directory exists: " + pathPrefix)
+    }
 
     // Figure out all the log file paths from the LOGS env
     var envs = clientRequestBody.Env || []
@@ -128,27 +131,20 @@ module.exports = function(root, verbose, body){
     var containerPath = containersRoot + "/" + containerId
     debug("ContainerPath: " + containerPath)
 
-    // Make sure the root to the containers directory exists
-    fs.stat(containersRoot, function(err, stat) {
-      if (err) {
-        err = fs.mkdirSync(containersRoot)
-        if (err) throw err;
-        debug("Making containers directory complete")
-
-        // Finally, create the symlink.
-        err = fs.symlinkSync(originalPath, containerPath)
-        if (err) throw err;
-        debug("Linking complete")        
-      }
-      else {
-
-        // TODO: Ouch.
-        err = fs.symlinkSync(originalPath, containerPath)
-        if (err) throw err;
-          debug("Linking complete")        
-        }
-      })
-
+    // Create the symlink
+    if (!fs.existsSync(containersRoot)) {
+      var err = fs.mkdirSync(containersRoot)
+      if (err) throw err;
+      debug("Created containers directory: " + containersRoot)
+    } else {
+      debug("Containers directory exists: " + containersRoot)
+    }
+    var err = fs.symlinkSync(originalPath, containerPath)
+    if (err) throw err;
+    debug("Linking complete: " + originalPath + " -> " + containerPath)
+    if (!fs.existsSync(containerPath)) {
+      throw "Container link doesn't exist: " + containerPath
+    }
   
     // Just send back the incoming server response.
     var modifiedServerResponseBody = JSON.stringify(serverResponseBody)
