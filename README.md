@@ -9,16 +9,16 @@ At the same time, at work at Sumo Logic our customers are telling us that the st
 
 Even some programs that are otherwise easily containerized as single processes pose some challenges to the stdout model. For example, popular webservers write at least two log files: access and error logs. There are of course work arounds to map this back to a single stdout stream. But ultimately there's only so much multiplexing that can be done before the demuxing operation becomes too painful.
 
-powerstrip-logfiles presents a proof of concept towards easily centralizing log files from within a container. Simply set LOGS=/var/logs/nginx in the container environment, for example, will use a bind mount to make the Nginx access and error logs available on the host under `/var/logs/container-logfiles/containers/[ID of the Nginx container]/var/log/nginx`. A file-based log collector can now simply be configured to recursively collect from `/var/logs/container-logfiles/containers` and will pick up logs from any container configured with the LOGS environment.
+powerstrip-logfiles presents a proof of concept towards easily centralizing log files from within a container. Simply set `LOGS=/var/logs/nginx` in the container environment, for example, will use a bind mount to make the Nginx access and error logs available on the host under `/var/logs/container-logfiles/containers/[ID of the Nginx container]/var/log/nginx`. A file-based log collector can now simply be configured to recursively collect from `/var/logs/container-logfiles/containers` and will pick up logs from any container configured with the LOGS environment.
 
 
-## Install
+### Install
 
 ```bash
 $ docker build -t raychaser/powerstrip-logfiles .
 ```
 
-## Run the adapter
+### Run the adapter
 
 ```bash
 $ docker run -it --rm --name powerstrip-logfile \
@@ -29,7 +29,7 @@ $ docker run -it --rm --name powerstrip-logfile \
 ```
 
 
-## Run Powerstrip
+### Run Powerstrip
 
 First create a Powerstrip configuration with the logfiles adapter:
 
@@ -56,7 +56,7 @@ $ docker run -d --name powerstrip \
   clusterhq/powerstrip
 ```
 
-## Run containers
+### Run containers
 
 Now you can use the normal docker client to run containers.
 
