@@ -1,0 +1,40 @@
+Build and run an example Nginx container:
+
+$ sudo docker build -t raychaser/nginx-example . && sudo docker run -d --name nginx-example -p 80:80 raychaser/nginx-example
+
+
+Hit http://localhost a couple of times. Nginx logs are in /var/log/nginx in the container:
+
+$ sudo docker exec nginx-example ls -la /var/log/nginx
+
+$ sudo docker exec nginx-example tail /var/log/nginx/access.log
+
+
+Stop and remove the Nginx example container:
+
+$ sudo docker stop nginx-example && sudo docker rm nginx-example
+
+
+Create another Nginx example container through powerstrip-logfiles with the Nginx log path specified on the commandline:
+
+$ CID=$(DOCKER_HOST=localhost:2375 docker run -d --name nginx-example-powerstrip -p 80:80 -e LOGS=/var/log/nginx raychaser/nginx-example)
+
+$ echo $CID
+
+$ ls -la /tmp/logfiles/containers/$CID/
+total 12
+drwxr-xr-x 3 root root 4096 Mar 12 18:41 .
+drwxr-xr-x 5 root root 4096 Mar 12 18:41 ..
+drwxr-xr-x 3 root root 4096 Mar 12 18:41 var
+
+$ tail /tmp/logfiles/containers/$CID/var/log/nginx/access.log
+172.17.42.1 - - [13/Mar/2015:01:43:04 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0"
+172.17.42.1 - - [13/Mar/2015:01:43:05 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0"
+172.17.42.1 - - [13/Mar/2015:01:43:05 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0"
+172.17.42.1 - - [13/Mar/2015:01:43:06 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0"
+172.17.42.1 - - [13/Mar/2015:01:43:07 +0000] "GET / HTTP/1.1" 304 0 "-" "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:36.0) Gecko/20100101 Firefox/36.0"
+
+
+Stop and remove the powerstrip Nginx example container:
+
+$ sudo docker stop nginx-example-powerstrip && sudo docker rm nginx-example-powerstrip

@@ -30,24 +30,26 @@ module.exports = function(root, verbose, body){
     debug("\nbody.ClientRequest.Body:")
     debug(JSON.stringify(clientRequestBody, null, 4))
 
-    // Get the ID of the container, and the name.
-    var token = createGuid()
-    var pathPrefix = root + "/original/" + token
-
     // Create the directory for the original logs
-    fs.stat(pathPrefix, function(err, stat) {
+    var originalPath = root + "/original" 
+    var token = createGuid()
+    var pathPrefix = originalPath + "/" + token
+    fs.stat(originalPath, function(err, stat) {
       if (err) {
-        fs.mkdir(pathPrefix, function (err) {
-          if (err) {
-            setTimeout(function() {
-              if (err) throw err;
-              debug("Making original directory complete")
-            }, 1000)
-          }
-          else {
-            debug("Making original directory complete")
-          }
-        })
+        err = fs.mkdirSync(originalPath)
+        if (err) throw err;   
+        debug("Making original directory complete")
+
+        err = fs.mkdirSync(pathPrefix)
+        if (err) throw err;   
+        debug("Making path prefix directory complete")
+      }  
+      else {
+
+        // TODO: Ouch.
+        err = fs.mkdirSync(pathPrefix)
+        if (err) throw err;   
+        debug("Making path prefix directory complete")
       }
     })
 
@@ -129,29 +131,25 @@ module.exports = function(root, verbose, body){
     // Make sure the root to the containers directory exists
     fs.stat(containersRoot, function(err, stat) {
       if (err) {
-        fs.mkdir(containersRoot, function (err) {
-          if (err) throw err;
-          debug("Making containers directory complete")
-        })
-      }
-    })
+        err = fs.mkdirSync(containersRoot)
+        if (err) throw err;
+        debug("Making containers directory complete")
 
-    // Finally, create the symlink.
-    fs.symlink(originalPath, containerPath, function (err) {
-      if (err) {
-        debug("Error during linking, trying again: " + err)
-        setTimeout(function() {
-            fs.symlink(originalPath, containerPath, function (err) {
-              if (err) throw err;
-              debug("Linking complete")
-            })
-        }, 1000)
-      } 
-      else {
+        // Finally, create the symlink.
+        err = fs.symlinkSync(originalPath, containerPath)
+        if (err) throw err;
         debug("Linking complete")        
       }
-    })
+      else {
 
+        // TODO: Ouch.
+        err = fs.symlinkSync(originalPath, containerPath)
+        if (err) throw err;
+          debug("Linking complete")        
+        }
+      })
+
+  
     // Just send back the incoming server response.
     var modifiedServerResponseBody = JSON.stringify(serverResponseBody)
     body.ServerResponse.Body = modifiedServerResponseBody
