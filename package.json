@@ -6,7 +6,8 @@
   "dependencies": {
     "concat-stream": "^1.4.7",
     "minimist": "^1.1.0",
-    "dockerode": "^2.0.7"
+    "dockerode": "^2.0.7",
+    "step": "^0.0.5"
   },
   "devDependencies": {
     "tape": "^3.4.0"

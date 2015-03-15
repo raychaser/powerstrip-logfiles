@@ -1,9 +1,20 @@
 var fs = require('fs');
 var Docker = require('dockerode');
+var Step = require('step');
 
 module.exports = function(root, verbose, body) {
 
   var docker = new Docker({socketPath: '/var/run/docker.sock'});
+
+  var POWERSTRIP_TOKEN = "POWERSTRIP_TOKEN__";
+
+  var returnBody = {
+    PowerstripProtocolVersion: 1
+  }
+
+  //
+  // Helper functions
+  //
 
   function S4() {
     return (((1+Math.random())*0x10000)|0).toString(16).substring(1);
@@ -19,13 +30,11 @@ module.exports = function(root, verbose, body) {
     }
   }
 
-  var POWERSTRIP_TOKEN = "POWERSTRIP_TOKEN__";
+  //
+  // Pre- and post-hook processing
+  //
 
-  var returnBody = {
-    PowerstripProtocolVersion: 1
-  }
-
-  if (body.Type == 'pre-hook'){
+  function preHook(root, verbose, body) {
 
     // Figure out the actual request to the Docker daemon.
     var clientRequestBody = JSON.parse(body.ClientRequest.Body);
@@ -95,12 +104,14 @@ module.exports = function(root, verbose, body) {
     body.ClientRequest.Body = modifiedClientRequestBody;
     returnBody.ModifiedClientRequest = body.ClientRequest;
   }
-  else if(body.Type == 'post-hook'){
+
+  function postHook(root, verbose, body) {
 
     // Get the server response
     debug("body.ServerResponse.Body:");
     debug(body.ServerResponse.Body);
-    var serverResponseBody = JSON.parse(body.ServerResponse.Body);
+    var serverResponseBody;
+    serverResponseBody = JSON.parse(body.ServerResponse.Body);
     debug("Parsed body.ServerResponse.Body:");
     debug(JSON.stringify(serverResponseBody, null, 4));
 
@@ -111,55 +122,148 @@ module.exports = function(root, verbose, body) {
     // Get the details for this container so we can get the
     // token from the container's environment
     var container = docker.getContainer(containerId);
-    container.inspect(function (err, data) {
-      if (err) throw err;
-      debug(data);
 
-      // Get the environment variables and find the token
-      var envs = data.Config.Env
-      debug("Envs: " + envs)
-      var token = null
-      for (var i = 0; i < envs.length; i++) {
-        var env = envs[i]
-        if (env.startsWith(POWERSTRIP_TOKEN)) {
-          var kv = env.split("=", POWERSTRIP_TOKEN.length + 1)
-          if (kv[0] === POWERSTRIP_TOKEN) {
-            token = kv[1]
+    Step(
+      function() {
+        container.inspect(err, this);
+      },
+      function(err, data) {
+        if (err) throw err;
+        debug(data);
+
+        // Get the environment variables and find the token
+        var envs = data.Config.Env
+        debug("Envs: " + envs)
+        var token = null
+        for (var i = 0; i < envs.length; i++) {
+          var env = envs[i]
+          if (env.startsWith(POWERSTRIP_TOKEN)) {
+            var kv = env.split("=", POWERSTRIP_TOKEN.length + 1)
+            if (kv[0] === POWERSTRIP_TOKEN) {
+              token = kv[1]
+            }
           }
         }
-      }
-      debug("Token: " + token)
+        debug("Token: " + token)
 
-      // With the token, we now know the path to rename
-      var originalPath = root + "/original/" + token
-      debug("OriginalPath: " + originalPath)
-      var containersRoot = root + "/containers"
-      var containerPath = containersRoot + "/" + containerId
-      debug("ContainerPath: " + containerPath)
+        // With the token, we now know the path to rename
+        var originalPath = root + "/original/" + token
+        debug("OriginalPath: " + originalPath)
+        var containersRoot = root + "/containers"
+        var containerPath = containersRoot + "/" + containerId
+        debug("ContainerPath: " + containerPath)
 
-      // Create the symlink
-      if (!fs.existsSync(containersRoot)) {
-        var err = fs.mkdirSync(containersRoot)
+        // Create the symlink
+        if (!fs.existsSync(containersRoot)) {
+          var err = fs.mkdirSync(containersRoot)
+          if (err) throw err;
+          debug("Created containers directory: " + containersRoot)
+        } else {
+          debug("Containers directory exists: " + containersRoot)
+        }
+        var err = fs.symlinkSync(originalPath, containerPath)
         if (err) throw err;
-        debug("Created containers directory: " + containersRoot)
-      } else {
-        debug("Containers directory exists: " + containersRoot)
+        debug("Linking complete: " + originalPath + " -> " + containerPath)
+        if (!fs.existsSync(containerPath)) {
+          throw "Container link doesn't exist: " + containerPath
+        }
+      });
+
+    // container.inspect(function (err, data) {
+    //   if (err) throw err;
+    //   debug(data);
+
+    //   // Get the environment variables and find the token
+    //   var envs = data.Config.Env
+    //   debug("Envs: " + envs)
+    //   var token = null
+    //   for (var i = 0; i < envs.length; i++) {
+    //     var env = envs[i]
+    //     if (env.startsWith(POWERSTRIP_TOKEN)) {
+    //       var kv = env.split("=", POWERSTRIP_TOKEN.length + 1)
+    //       if (kv[0] === POWERSTRIP_TOKEN) {
+    //         token = kv[1]
+    //       }
+    //     }
+    //   }
+    //   debug("Token: " + token)
+
+    //   // With the token, we now know the path to rename
+    //   var originalPath = root + "/original/" + token
+    //   debug("OriginalPath: " + originalPath)
+    //   var containersRoot = root + "/containers"
+    //   var containerPath = containersRoot + "/" + containerId
+    //   debug("ContainerPath: " + containerPath)
+
+    //   // Create the symlink
+    //   if (!fs.existsSync(containersRoot)) {
+    //     var err = fs.mkdirSync(containersRoot)
+    //     if (err) throw err;
+    //     debug("Created containers directory: " + containersRoot)
+    //   } else {
+    //     debug("Containers directory exists: " + containersRoot)
+    //   }
+    //   var err = fs.symlinkSync(originalPath, containerPath)
+    //   if (err) throw err;
+    //   debug("Linking complete: " + originalPath + " -> " + containerPath)
+    //   if (!fs.existsSync(containerPath)) {
+    //     throw "Container link doesn't exist: " + containerPath
+    //   }
+    // });
+  }
+
+  //
+  // Main processing
+  //
+
+  if (body.Type == 'pre-hook'){
+
+    try {
+
+      // Pre-hook processing.
+      preHook(root, verbose, body);
+
+    } catch (err) {
+
+      // Just move on and pass the response back
+      // without processing
+      debug("Error during pre-hook processing, " +
+        "passing response without processing: " + err);
+    }
+  }
+  else if(body.Type == 'post-hook'){
+
+    // Check if Docker returned an error.
+    if (body.ServerResponse.Code != 201) {
+
+        // Just move on and pass the response back
+        // without processing
+      debug("ServerResponse.Code not 200 CREATED, but: " +
+        body.ServerResponse.Code);
+    }
+    else {
+
+      try {
+
+        // Post-hook processing
+        postHook(root, verbose, body);
+
+      } catch (err) {
+
+        // Just move on and pass the response back
+        // without processing
+        debug("Error during pre-hook processing, " +
+          "passing response without processing: " + err);
       }
-      var err = fs.symlinkSync(originalPath, containerPath)
-      if (err) throw err;
-      debug("Linking complete: " + originalPath + " -> " + containerPath)
-      if (!fs.existsSync(containerPath)) {
-        throw "Container link doesn't exist: " + containerPath
-      }
-    });
+    }
 
     // Just send back the incoming server response.
     returnBody.ModifiedServerResponse = body.ServerResponse
 
-  } else{
+  } else {
 
-    return null
+    return null;
   }
 
-  return returnBody
+  return returnBody;
 }
