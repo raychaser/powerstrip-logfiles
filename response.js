@@ -98,8 +98,10 @@ module.exports = function(root, verbose, body) {
   else if(body.Type == 'post-hook'){
 
     // Get the server response
-    var serverResponseBody = JSON.parse(body.ServerResponse.Body);
     debug("body.ServerResponse.Body:");
+    debug(body.ServerResponse.Body);
+    var serverResponseBody = JSON.parse(body.ServerResponse.Body);
+    debug("Parsed body.ServerResponse.Body:");
     debug(JSON.stringify(serverResponseBody, null, 4));
 
     // From the server response we can get the container ID
@@ -151,10 +153,7 @@ module.exports = function(root, verbose, body) {
       }
     });
 
-
     // Just send back the incoming server response.
-    var modifiedServerResponseBody = JSON.stringify(serverResponseBody)
-    body.ServerResponse.Body = modifiedServerResponseBody
     returnBody.ModifiedServerResponse = body.ServerResponse
 
   } else{
