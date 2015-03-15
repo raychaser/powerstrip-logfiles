@@ -1,21 +1,20 @@
 Run powerstrip-logfiles:
 
-sudo docker build -t raychaser/powerstrip-logfiles:latest . && sudo docker run -it --rm --name powerstrip-logfiles --expose 80 raychaser/powerstrip-logfiles:latest --root /tmp/logfiles -v
-
+$ sudo docker build -t raychaser/powerstrip-logfiles:latest . && sudo docker run --privileged -it --rm --name powerstrip-logfiles --expose 80 -v /var/log/container-logfiles:/var/log/container-logfiles -v /var/run/docker.sock:/var/run/docker.sock raychaser/powerstrip-logfiles:latest -v --root /var/log/container-logfiles
 
 Run powerstrip-debug:
 
-sudo docker build -t raychaser/powerstrip-debug . && sudo docker run -it --rm --name powerstrip-debug --expose 80 raychaser/powerstrip-debug
+$ sudo docker build -t raychaser/powerstrip-debug . && sudo docker run -it --rm --name powerstrip-debug --expose 80 raychaser/powerstrip-debug
 
 
 Run powerstrip:
 
-sudo docker build -t raychaser/powerstrip . && sudo docker run -it --rm --name powerstrip -v /var/run/docker.sock:/var/run/docker.sock -v ~/Development/powerstrip-sumologic-demo/adapters.yml:/etc/powerstrip/adapters.yml --link powerstrip-logfiles:logfiles --link powerstrip-debug:debug -p 2375:2375 raychaser/powerstrip
+$ sudo docker run -it --rm --name powerstrip -v /var/run/docker.sock:/var/run/docker.sock -v ~/Development/powerstrip-sumologic-demo/adapters.yml:/etc/powerstrip/adapters.yml --link powerstrip-logfiles:logfiles --link powerstrip-debug:debug -p 2375:2375 clusterhq/powerstrip
 
 
 Run a simple test:
 
-DOCKER_HOST=localhost:2375 docker run -it -e "LOGS=/x,/y" -e "LOGS=/z" ubuntu ls -la /z
+$ DOCKER_HOST=localhost:2375 docker run -it -e "LOGS=/x,/y" -e "LOGS=/z" ubuntu ls -la /z
 
 
 Basic adapters.yml with powerstrip-debug:
@@ -26,4 +25,14 @@ endpoints:
     post: [debug, logfiles]
 adapters:
   debug: http://debug/v1/extension
+  logfiles: http://logfiles/v1/extension
+
+
+Basic adapters.yml
+
+endpoints:
+  "POST /*/containers/create":
+    pre: [logfiles]
+    post: [logfiles]
+adapters:
   logfiles: http://logfiles/v1/extension
