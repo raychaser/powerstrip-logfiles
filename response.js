@@ -125,7 +125,7 @@ module.exports = function(root, verbose, body) {
 
     Step(
       function() {
-        container.inspect(err, this);
+        container.inspect(this);
       },
       function(err, data) {
         if (err) throw err;
@@ -168,48 +168,6 @@ module.exports = function(root, verbose, body) {
           throw "Container link doesn't exist: " + containerPath
         }
       });
-
-    // container.inspect(function (err, data) {
-    //   if (err) throw err;
-    //   debug(data);
-
-    //   // Get the environment variables and find the token
-    //   var envs = data.Config.Env
-    //   debug("Envs: " + envs)
-    //   var token = null
-    //   for (var i = 0; i < envs.length; i++) {
-    //     var env = envs[i]
-    //     if (env.startsWith(POWERSTRIP_TOKEN)) {
-    //       var kv = env.split("=", POWERSTRIP_TOKEN.length + 1)
-    //       if (kv[0] === POWERSTRIP_TOKEN) {
-    //         token = kv[1]
-    //       }
-    //     }
-    //   }
-    //   debug("Token: " + token)
-
-    //   // With the token, we now know the path to rename
-    //   var originalPath = root + "/original/" + token
-    //   debug("OriginalPath: " + originalPath)
-    //   var containersRoot = root + "/containers"
-    //   var containerPath = containersRoot + "/" + containerId
-    //   debug("ContainerPath: " + containerPath)
-
-    //   // Create the symlink
-    //   if (!fs.existsSync(containersRoot)) {
-    //     var err = fs.mkdirSync(containersRoot)
-    //     if (err) throw err;
-    //     debug("Created containers directory: " + containersRoot)
-    //   } else {
-    //     debug("Containers directory exists: " + containersRoot)
-    //   }
-    //   var err = fs.symlinkSync(originalPath, containerPath)
-    //   if (err) throw err;
-    //   debug("Linking complete: " + originalPath + " -> " + containerPath)
-    //   if (!fs.existsSync(containerPath)) {
-    //     throw "Container link doesn't exist: " + containerPath
-    //   }
-    // });
   }
 
   //
@@ -252,7 +210,7 @@ module.exports = function(root, verbose, body) {
 
         // Just move on and pass the response back
         // without processing
-        debug("Error during pre-hook processing, " +
+        debug("Error during post-hook processing, " +
           "passing response without processing: " + err);
       }
     }
