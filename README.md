@@ -11,7 +11,7 @@ Even some programs that are otherwise easily containerized as single processes p
 
 powerstrip-logfiles presents a proof of concept towards easily centralizing log files from within a container. Simply setting `LOGS=/var/logs/nginx` in the container environment, for example, will use a bind mount to make the Nginx access and error logs available on the host under `/var/logs/container-logfiles/containers/[ID of the Nginx container]/var/log/nginx`. A file-based log collector can now simply be configured to recursively collect from `/var/logs/container-logfiles/containers` and will pick up logs from any container configured with the LOGS environment.
 
-This implementation is based on [powerstrip-weave](https://github.com/binocarlos/powerstrip-weave) by @binocarlos (Kai Davenport <kaiyadavenport@gmail.com>). All mistakes and bugs are entirely mine.
+This implementation is based on [powerstrip-weave](https://github.com/binocarlos/powerstrip-weave) by Kai Davenport <kaiyadavenport@gmail.com>. All mistakes and bugs are entirely mine.
 
 
 ### Install
