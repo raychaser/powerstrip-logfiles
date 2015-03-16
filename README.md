@@ -23,7 +23,7 @@ $ docker build -t raychaser/powerstrip-logfiles .
 ### Run the adapter
 
 ```bash
-$ sudo docker run --privileged -it --rm \
+$ docker run --privileged -it --rm \
     --name powerstrip-logfiles \
     --expose 80 -v /var/log/container-logfiles:/var/log/container-logfiles \
     -v /var/run/docker.sock:/var/run/docker.sock \
