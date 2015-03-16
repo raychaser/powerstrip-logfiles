@@ -53,11 +53,11 @@ And then run the Powerstrip container and link it to the powerstrip-logfiles con
 
 ```bash
 $ docker run -d --name powerstrip \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ~/powerstrip-demo/adapters.yml:/etc/powerstrip/adapters.yml \
-  --link powerstrip-logfiles:logfiles \
-  -p 2375:2375 \
-  clusterhq/powerstrip
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ~/powerstrip-demo/adapters.yml:/etc/powerstrip/adapters.yml \
+    --link powerstrip-logfiles:logfiles \
+    -p 2375:2375 \
+    clusterhq/powerstrip
 ```
 
 ### Run containers
