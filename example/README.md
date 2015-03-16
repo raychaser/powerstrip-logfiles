@@ -5,7 +5,7 @@ A quick example to illustrate how powerstrip-logfiles can be used to collect log
 
 ### Pre-conditions
 
-Run powerstrip-logfiles and Powerstrip as described in the [main project readme](../). Going forward this example assumes Powerstrip running and DOCKER_HOST to be set as follows:
+Run powerstrip-logfiles and Powerstrip as described in the [main project readme](https://github.com/raychaser/powerstrip-logfiles). Going forward this example assumes Powerstrip running and DOCKER_HOST to be set as follows:
 
 ```bash
 $ export DOCKER_HOST=tcp://127.0.0.1:2375
