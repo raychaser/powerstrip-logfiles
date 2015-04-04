@@ -14,11 +14,16 @@ powerstrip-logfiles presents a proof of concept towards easily centralizing log 
 This implementation is based on [powerstrip-weave](https://github.com/binocarlos/powerstrip-weave) by Kai Davenport. All mistakes and bugs are entirely mine.
 
 
-### Install
+### Install from Source
+
+The powerstrip-logfiles image is [available directly|https://registry.hub.docker.com/u/raychaser/powerstrip-logfiles/] from Docker Hub.
+
+If you want to build the image from source, use the command below.
 
 ```bash
 $ docker build -t raychaser/powerstrip-logfiles .
 ```
+
 
 ### Run the adapter
 
