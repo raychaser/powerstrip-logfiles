@@ -16,7 +16,7 @@ $ export DOCKER_HOST=tcp://127.0.0.1:2375
 You can just run Nginx from a toy image off of Docker Hub based on the Dockerfile in this repository:
 
 ```bash
-$ docker run -d --name nginx-example -p 80:80 raychaser/powerstrip-logfiles:nginx-example-latest
+$ docker run -d --name nginx-example -p 80:80 raychaser/powerstrip-logfiles:latest-nginx-example
 ```
 
 Or, if you want to run an build locally:
