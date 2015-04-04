@@ -11,7 +11,15 @@ Run powerstrip-logfiles and Powerstrip as described in the [main project readme]
 $ export DOCKER_HOST=tcp://127.0.0.1:2375
 ```
 
-### Build and run Nginx
+### Run Nginx
+
+You can just run Nginx from a toy image off of Docker Hub based on the Dockerfile in this repository:
+
+```bash
+$ docker run -d --name nginx-example -p 80:80 raychaser/powerstrip-logfiles:nginx-example-latest
+```
+
+Or, if you want to run an build locally:
 
 ```bash
 $ docker build -t raychaser/nginx-example . && \
@@ -45,10 +53,10 @@ $ docker stop nginx-example && docker rm nginx-example
 Create another Nginx example container through powerstrip-logfiles with the Nginx log path specified on the commandline:
 
 ```bash
-$ CID=$(DOCKER_HOST=localhost:2375 docker run -d --name nginx-example-powerstrip -p 80:80 -e LOGS=/var/log/nginx raychaser/nginx-example) && echo $CID
+$ CID=$(DOCKER_HOST=localhost:2375 docker run -d --name nginx-example-powerstrip -p 80:80 -e LOGS=/var/log/nginx raychaser/powerstrip-logfiles:nginx-example-latest) && echo $CID
 ```
 
-You should now be able to see the Nginx container's /var under the hosts `/var/log/container-logfiles/containers/$CID/`:
+You should now be able to see the Nginx container's /var under the host's `/var/log/container-logfiles/containers/$CID/`:
 
 ```bash
 $ ls -la /var/log/container-logfiles/containers/$CID/
