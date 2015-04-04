@@ -16,7 +16,7 @@ This implementation is based on [powerstrip-weave](https://github.com/binocarlos
 
 ### Install from Source
 
-The powerstrip-logfiles image is [available directly|https://registry.hub.docker.com/u/raychaser/powerstrip-logfiles/] from Docker Hub.
+The powerstrip-logfiles image is [available directly](https://registry.hub.docker.com/u/raychaser/powerstrip-logfiles/) from Docker Hub.
 
 If you want to build the image from source, use the command below.
 
