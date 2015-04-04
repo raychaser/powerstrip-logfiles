@@ -53,7 +53,7 @@ $ docker stop nginx-example && docker rm nginx-example
 Create another Nginx example container through powerstrip-logfiles with the Nginx log path specified on the commandline:
 
 ```bash
-$ CID=$(DOCKER_HOST=localhost:2375 docker run -d --name nginx-example-powerstrip -p 80:80 -e LOGS=/var/log/nginx raychaser/powerstrip-logfiles:nginx-example-latest) && echo $CID
+$ CID=$(DOCKER_HOST=localhost:2375 docker run -d --name nginx-example-powerstrip -p 80:80 -e LOGS=/var/log/nginx raychaser/powerstrip-logfiles:latest-nginx-example) && echo $CID
 ```
 
 You should now be able to see the Nginx container's /var under the host's `/var/log/container-logfiles/containers/$CID/`:
