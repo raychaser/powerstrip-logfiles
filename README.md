@@ -77,18 +77,19 @@ $ export DOCKER_HOST=tcp://127.0.0.1:2375
 Now you can specify as part of the container's environment which paths are supposed to be considered logfile paths. Those paths will be bind-mounted to appear under the location of the --root specified when running the powerstrip-logfiles container.
 
 ```bash
-$ docker run --rm -e "LOGS=/x,/y" ubuntu \
+$ docker run --cidfile=cid.txt --rm -e "LOGS=/x,/y" ubuntu \
     bash -c 'touch /x/foo; ls -la /x; touch /y/bar; ls -la /y'
 ```
 
 You should now be able to see the files "foo" and "bar" under the path specified as the --root:
 
 ```bash
-$ ls /var/log/container-logfiles/containers/[container ID]/x
+$ CID=$(cat cid.txt)
+$ ls /var/log/container-logfiles/containers/$CID/x
 ```
 
 ```bash
-$ ls /var/log/container-logfiles/containers/[container ID]/y
+$ ls /var/log/container-logfiles/containers/$CID/y
 ```
 
 
