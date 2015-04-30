@@ -21,7 +21,7 @@ if (!args.root || args.root == "") {
 }
 
 // Check for absolute root path
-if (!args.root.startsWith("/")) {
+if (!args.root.indexOf("/") == 0) {
   console.log("\nOnly absolute paths allowed for --root. Exiting.\n\n");
   process.exit();
 }

@@ -1,4 +1,5 @@
 var fs = require('fs');
+var mount = require("nodeos-mount");
 var Docker = require('dockerode');
 var Step = require('step');
 
@@ -74,7 +75,7 @@ module.exports = function(root, verbose, body) {
     var logs = [];
     for (var i = 0; i < envs.length; i++) {
       var env = envs[i];
-      if (env.startsWith("LOGS=")) {
+      if (env.indexOf("LOGS=") == 0) {
         var kv = env.split("=", 5);
         if (kv[0] === "LOGS") {
           logs = logs.concat(kv[1].split(","));
@@ -137,35 +138,39 @@ module.exports = function(root, verbose, body) {
         var token = null
         for (var i = 0; i < envs.length; i++) {
           var env = envs[i]
-          if (env.startsWith(POWERSTRIP_TOKEN)) {
+          if (env.indexOf(POWERSTRIP_TOKEN) == 0) {
             var kv = env.split("=", POWERSTRIP_TOKEN.length + 1)
             if (kv[0] === POWERSTRIP_TOKEN) {
               token = kv[1]
             }
           }
         }
-        debug("Token: " + token)
+        debug("Token: " + token);
 
         // With the token, we now know the path to rename
-        var originalPath = root + "/original/" + token
-        debug("OriginalPath: " + originalPath)
-        var containersRoot = root + "/containers"
-        var containerPath = containersRoot + "/" + containerId
-        debug("ContainerPath: " + containerPath)
+        var originalPath = root + "/original/" + token;
+        debug("OriginalPath: " + originalPath);
+        var containersRoot = root + "/containers";
+        var containerPath = containersRoot + "/" + containerId;
+        debug("ContainerPath: " + containerPath);
 
-        // Create the symlink
+        // Create the link
         if (!fs.existsSync(containersRoot)) {
-          var err = fs.mkdirSync(containersRoot)
+          var err = fs.mkdirSync(containersRoot);
           if (err) throw err;
-          debug("Created containers directory: " + containersRoot)
+          debug("Created containers directory: " + containersRoot);
         } else {
-          debug("Containers directory exists: " + containersRoot)
+          debug("Containers directory exists: " + containersRoot);
         }
-        var err = fs.symlinkSync(originalPath, containerPath)
+        var err = fs.mkdirSync(containerPath);
         if (err) throw err;
-        debug("Linking complete: " + originalPath + " -> " + containerPath)
+        debug("Created container path: " + containerPath);
+        var err = mount.mountSync(originalPath, containerPath, "", ["bind"]);
+        debug(err)
+        if (err) throw err;
+        debug("Linking complete: " + originalPath + " -> " + containerPath);
         if (!fs.existsSync(containerPath)) {
-          throw "Container link doesn't exist: " + containerPath
+          throw "Container link doesn't exist: " + containerPath;
         }
       });
   }

@@ -1,7 +1,8 @@
-FROM errordeveloper/iojs-minimal-runtime:v1.0.1
+FROM library/node
 MAINTAINER Christian Beedgen <raychaser@gmail.com>
-ADD . /srv/app
+ADD package.json /srv/app/package.json
 WORKDIR /srv/app
 RUN npm install
+ADD . /srv/app
 EXPOSE 80
 ENTRYPOINT ["node", "index.js"]
