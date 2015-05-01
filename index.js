@@ -16,8 +16,12 @@ var args = require('minimist')(process.argv, {
 
 // Make sure a root path is specified
 if (!args.root || args.root == "") {
-  console.log("\nNo --root specified. Exiting.\n\n");
-  process.exit();
+  if (process.env.ROOT && process.env.ROOT != "") {
+    args.root = process.env.ROOT
+  } else {
+    console.log("\nNo --root specified. Exiting.\n\n");
+    process.exit();
+  }
 }
 
 // Check for absolute root path
@@ -39,7 +43,7 @@ var server = http.createServer(Server(args));
 // Start listening for HTTP requests
 server.listen(args.port, function() {
   console.log('Server listening on port: ' + args.port);
-  if (args.verbose){
+  if (args.verbose || (process.env.VERBOSE && process.env.VERBOSE != "")) {
     console.log('Verbose flag is on');
   }
 })

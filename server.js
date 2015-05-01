@@ -5,7 +5,7 @@ module.exports = function(opts) {
   opts = opts || {};
 
   function debug(s) {
-    if (opts.verbose) {
+    if (opts.verbose || (process.env.VERBOSE && process.env.VERBOSE != "")) {
       console.log(s);
     }
   }
