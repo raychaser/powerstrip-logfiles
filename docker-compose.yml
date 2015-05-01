@@ -1,0 +1,27 @@
+powerstriplogfiles:
+  image: raychaser/powerstrip-logfiles:latest
+  ports: 
+    - 80
+  volumes:
+    - /var/log/container-logfiles:/var/log/container-logfiles
+    - /var/run/docker.sock:/var/run/docker.sock
+  environment:
+    ROOT: /var/log/container-logfiles
+    VERBOSE: true
+  entrypoint: 
+    - node
+    - index.js
+powerstrip:
+  image: clusterhq/powerstrip:latest
+  ports:
+    - "2375:2375"
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - ~/powerstrip-demo/adapters.yml:/etc/powerstrip/adapters.yml
+  links:
+    - "powerstriplogfiles: logfiles"
+sumologiccollector:
+  image: sumologic/collector:latest-powerstrip
+  volumes:
+    - "/var/log/container-logfiles:/var/log/container-logfiles"
+  env_file: .env
